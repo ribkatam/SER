@@ -1,0 +1,106 @@
+# if audio or feature parameters are changed, rerun save_feature.py file.
+audio:
+  sr: 16000   # recording sampling rate
+  min_len: 0  # discard sample if len(sample) < min_len 
+  max_len: 34.139   # 34.139 sec  is max of the dataset 
+
+  version:
+    pad: False   # pad to the maximum len (True or False)
+    non_pad: False  # original audio len (True or False)
+    initial: 5 # the number of initial seconds to take (5 means take the first 5 second audio) or False 
+    middle: False  # the number of middle seconds to take or False
+
+feature: 
+  # all the True features will be concatenated along the feature dim 
+  # eg., setting mfcc and derivate True gives mfcc and its delta
+
+  feature_choice: {Mel: False,  MFCC: True, Energy: False, F0: False, Derivate: False}
+
+  MFCC:
+    mel_args: {n_fft: 512, hop_length: 256, n_mels: 80, center: False, power: 2}
+    n_mfcc: 15  
+    sample_rate: 16000
+    log_mels: True  # if False db-scaled melspectrogram will be used instead of log melspectrogram
+    norm:   # this is dct matrix normalisation (can be orth, blank is none)
+    feature_norm: True   # professor's proposed normalisation
+
+  Mel:
+    mel_args: {sample_rate: 16000, n_fft: 2048, win_length: 800, hop_length: 200, n_mels: 80, power: 2, normalized: False, center: False, norm: slaney , mel_scale: slaney}
+    log: True
+    log_offset: 1e-6
+
+  Energy:
+    spec_args: {n_fft: 512 , hop_length: 256, center: False, power: 1}
+  
+  F0:
+    pitch_args : {sample_rate: 16000, frame_length: 32.0, frame_shift: 16.0, resample_frequency: 16000}
+
+  Derivate:
+    win_length: 3   # the window over which to calculate delta and delta-deltas
+    mode: replicate  # padding mode
+    order: 1  # can be either int 1 (delta) or tuple (1, 2) for delta and delta-deltas
+
+# feature saving path
+saving:
+  audio_path: "/data3/ribka/SER/IEMOCAP"  # the absolute path of IEMOCAP audio
+  old_train_ann: "./train.csv"  # audio annotation
+  old_val_ann: "./val.csv"
+  folder: "IEMOCAPMFCC"  # saving folder of the extracted feature
+  new_train_ann: "./train_mfcc.csv"  # annotation for extracted feature
+  new_val_ann: "./val_mfcc.csv"
+
+model:
+  ConvBlock:
+    num_layers: 3 
+    n_in_channels : 1
+    n_out_channels : 128  
+    kernel_size_1: (15,5)   # this parameter should be based on the feature
+                               # 768 is the feature dim of bert. use 15 for  mfcc 80 for mel etc
+    kernel_size_other: (1,5)
+    stride: 1
+    padding: same   # pad such that in size == out size when stride = 1
+    bias: False
+    pool_size: (1,2)
+  
+
+  Attention:
+    num_layers : 3  # the number of layers in td_bu attention
+    n_bu: 248
+    n_td: 16
+    n_mid: 16  # units in the linear layer
+    n_att: 3    # frequency 
+    alpha: 0.4
+
+  
+  FC:
+    num_layers: 2  # if increased add a row with the number of units value
+    f0: 128  # input
+    f1: 32
+    f2: 4
+  
+  BERT:
+    path: './mockingjay-1500000.ckpt'
+
+
+
+training:
+  seed : 3245 
+  train_path: "./train_mfcc.csv"  # annotation path
+  val_path: "./val_mfcc.csv"
+  batch_size: 512
+  device : cuda:0
+  exp_folder: 04_06/exp1
+  epoch: 20000
+  lr: 4e-4
+  # worksheet name could be set as this file's name if one creates a copy of param file for different experiments
+  worksheet_path: "04_06/exp1.xlsx"  # set it as this file name
+  scheduler:
+    factor: 0.8  # the factor to multiply lr by
+    patience: 500  # how many consecutive increase in val loss to wait before reducing lr
+  early_stopper:
+    min_delta: 0  # (threshold) count as increase if validation loss is min_delta + the absolute min loss
+    patience: 1000 # how many consecutive increase in val loss to wait before stopping training
+  bert_conv_att: False   # if false ConvAtt with model will be used.
+  fine_tune: False  # applicable only for the bert model (True or False)
+ 
+
