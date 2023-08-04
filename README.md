@@ -9,7 +9,7 @@ The default parameters of the Mel are set to the same value as the pretrained be
 After choosing feature in the file:
 - run save_feature.py to save the desired features and create annotation file.
   If bert model is desired:
-- git clone https://github.com/andi611/Mockingjay-Speech-Representation.git(to clone the acoustic bert model)
+- git clone https://github.com/andi611/Mockingjay-Speech-Representation.git (to clone the acoustic bert model)
 
 Put the scripts and the checkpoint file inside the cloned folder
 - run train.py to start training 
