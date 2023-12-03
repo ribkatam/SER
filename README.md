@@ -1,8 +1,8 @@
 SPEECH EMOTION RECOGNITION
 
-Project purpose
-
+Project purpose:
 Discrete emotion classification of a speech.
+
 All the parameters of audio, feature, model and training are exposed in their respective block in the file param.yaml and can be set from there.
 
 The default parameters of the MFCC are set to parameters we got the best result by.
