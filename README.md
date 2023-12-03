@@ -1,4 +1,6 @@
 SPEECH EMOTION RECOGNITION
+Project purpose
+Discrete emotion classification of a speech.
 
 All the parameters of audio, feature, model and training are exposed in their respective block in the file param.yaml and can be set from there.
 
